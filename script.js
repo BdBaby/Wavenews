@@ -1,4 +1,8 @@
- // Your NewsAPI key
+// ===============================
+// Production-ready script.js
+// ===============================
+
+// API URL (Vercel serverless function)
 const API_URL = "/api/news";
 
 const grid = document.getElementById("newsGrid");
@@ -7,27 +11,35 @@ const darkToggle = document.getElementById("darkModeToggle");
 
 let articles = [];
 
-// Fetch news from API
+// -------------------------------
+// Fetch news from serverless API
+// -------------------------------
 async function fetchNews(url = API_URL) {
   try {
     const res = await fetch(url);
     const data = await res.json();
 
+    // Handle empty or invalid response
     if (!data.articles || data.articles.length === 0) {
       console.error("No articles returned", data);
+      grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No news available.</p>`;
       return;
     }
 
     articles = data.articles;
+
+    // Render hero & news grid
     renderHero(articles[0]);
     renderNews(articles);
   } catch (err) {
     console.error("Error fetching news:", err);
+    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">Failed to load news.</p>`;
   }
 }
 
-
-// Render hero story
+// -------------------------------
+// Render hero section
+// -------------------------------
 function renderHero(article) {
   const hero = document.getElementById("hero");
   hero.innerHTML = `
@@ -40,7 +52,9 @@ function renderHero(article) {
   `;
 }
 
-// Render news cards (skip the first hero article)
+// -------------------------------
+// Render news cards (skip hero)
+// -------------------------------
 function renderNews(newsList) {
   grid.innerHTML = "";
   newsList.slice(1).forEach((item, index) => {
@@ -56,13 +70,17 @@ function renderNews(newsList) {
   });
 }
 
+// -------------------------------
 // Open article detail page
+// -------------------------------
 function openArticle(index) {
   localStorage.setItem("article", JSON.stringify(articles[index]));
   window.location.href = "article.html";
 }
 
+// -------------------------------
 // Search functionality
+// -------------------------------
 searchInput.addEventListener("input", () => {
   const value = searchInput.value.toLowerCase();
   const filtered = articles.filter(a =>
@@ -71,24 +89,30 @@ searchInput.addEventListener("input", () => {
   renderNews(filtered);
 });
 
+// -------------------------------
 // Category filtering
+// -------------------------------
 document.querySelectorAll("nav a").forEach(link => {
   link.addEventListener("click", async (e) => {
     e.preventDefault();
     const cat = link.dataset.category;
-   const url = cat === "all"
-  ? "/api/news"
-  : `/api/news?category=${cat}`;
-
-
+    const url = cat === "all"
+      ? API_URL
+      : `/api/news?category=${cat}`;
     fetchNews(url);
   });
 });
 
+// -------------------------------
 // Dark mode toggle
+// -------------------------------
 darkToggle.addEventListener("click", () => {
   document.body.classList.toggle("dark");
 });
 
-// Initial fetch
-fetchNews();
+// -------------------------------
+// Wait for DOM then fetch news
+// -------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  fetchNews();
+});

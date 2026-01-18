@@ -1,6 +1,5 @@
  // Your NewsAPI key
-const API_KEY = "a83cb6b1d4b54eeaa05693a887689e9c";
-const API_URL = `https://newsapi.org/v2/top-headlines?language=en&pageSize=12&apiKey=${API_KEY}`;
+const API_URL = "/api/news";
 
 const grid = document.getElementById("newsGrid");
 const searchInput = document.getElementById("searchInput");
@@ -13,14 +12,20 @@ async function fetchNews(url = API_URL) {
   try {
     const res = await fetch(url);
     const data = await res.json();
-    articles = data.articles;
 
-    if (articles.length > 0) renderHero(articles[0]);
+    if (!data.articles || data.articles.length === 0) {
+      console.error("No articles returned", data);
+      return;
+    }
+
+    articles = data.articles;
+    renderHero(articles[0]);
     renderNews(articles);
   } catch (err) {
     console.error("Error fetching news:", err);
   }
 }
+
 
 // Render hero story
 function renderHero(article) {
@@ -71,9 +76,11 @@ document.querySelectorAll("nav a").forEach(link => {
   link.addEventListener("click", async (e) => {
     e.preventDefault();
     const cat = link.dataset.category;
-    const url = cat === "all"
-      ? API_URL
-      : `https://newsapi.org/v2/top-headlines?category=${cat}&language=en&apiKey=${API_KEY}`;
+   const url = cat === "all"
+  ? "/api/news"
+  : `/api/news?category=${cat}`;
+
+
     fetchNews(url);
   });
 });
